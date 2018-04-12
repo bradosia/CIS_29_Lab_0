@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="14.2.0">
+  <zoom_level>10</zoom_level>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>490</x>
+      <y>50</y>
+      <w>280</w>
+      <h>220</h>
+    </coordinates>
+    <panel_attributes>Parser
+--
+string degreeLine
+string charLine
+vector&lt;DegreePair&gt; degreePairList
+vector&lt;CharClass&gt; charClassList
+--
+Parser(string)
+~Parser()
+vector&lt;DegreePair&gt; parseDegree(string)
+vector&lt;CharClass&gt; parseChar(string)
+string degreeLineToCharLine(string)
+string charLineToDegreeLine(string)</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>700</x>
+      <y>320</y>
+      <w>210</w>
+      <h>190</h>
+    </coordinates>
+    <panel_attributes>CharClass
+--
+char char1
+degreeHexTable angleTable
+hexCharTable hexTable
+--
+CharClass(char)
+~CharClass()
+char toChar()
+int degreeToHex
+toHex(&amp;double,&amp;double)</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>350</x>
+      <y>600</y>
+      <w>210</w>
+      <h>160</h>
+    </coordinates>
+    <panel_attributes>degreeHexTable
+--
+vector&lt;int&gt; table
+const int hexInDegree
+--
+degreeHexTable()
+~degreeHexTable()
+int degreeToHex(int)
+int HexToChar(int)</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>700</x>
+      <y>600</y>
+      <w>210</w>
+      <h>160</h>
+    </coordinates>
+    <panel_attributes>hexCharTable
+--
+vector&lt;char&gt; table
+--
+hexCharTable()
+~hexCharTable()
+char hexToChar(int)
+int charToHex(char)</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>350</x>
+      <y>320</y>
+      <w>210</w>
+      <h>190</h>
+    </coordinates>
+    <panel_attributes>DegreePair
+--
+int degree1
+int degree2
+const int maxDegree
+const int minDegree
+degreeHexTable angleTable
+hexCharTable hexTable
+--
+DegreePair(double,double)
+~DegreePair()
+char toChar()</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>450</x>
+      <y>260</y>
+      <w>140</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>10.0;60.0;120.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>690</x>
+      <y>260</y>
+      <w>140</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>120.0;60.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>450</x>
+      <y>500</y>
+      <w>30</w>
+      <h>120</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>10.0;100.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>800</x>
+      <y>500</y>
+      <w>30</w>
+      <h>120</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>10.0;100.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>510</x>
+      <y>500</y>
+      <w>210</w>
+      <h>120</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>190.0;100.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>550</x>
+      <y>500</y>
+      <w>210</w>
+      <h>120</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>10.0;100.0;190.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>80</x>
+      <y>70</y>
+      <w>280</w>
+      <h>180</h>
+    </coordinates>
+    <panel_attributes>FileHandler
+--
+fstream fileIn
+fstream fileOut
+--
+FileHandler(string)
+~FileHandler()
+string readLines(string fileName)
+writeLines(string fileName, string writeStr)</panel_attributes>
+    <additional_attributes/>
+  </element>
+</diagram>
