@@ -9,210 +9,333 @@
 #include <string>
 #include <fstream>
 #include <iostream>     // std::cout
-#include <algorithm>    // std::find
 #include <vector>       // std::vector
+#include <bitset>
 using namespace std;
 
+/**
+ @class FileHandler
+ simply reads or writes the decoded or encoded message to a file\n
+ */
 class FileHandler {
-private:
-	fstream fileIn;
-	fstream fileOut;
 public:
-	FileHandler();
-	~FileHandler();
-	bool readLines(string fileName, vector<double>&);
-	void writeLines(string fileName, string writeStr);
+	FileHandler() {
+	}
+	~FileHandler() {
+	}
+	/** takes a file stream by reference and opens a file.\n
+	 * the reason we do not return the string of the entire ASCII file
+	 * is because we want to stream and not waste memory
+	 @pre None
+	 @post None
+	 @param string File name to open
+	 @return True on file open successful and false in not
+	 */
+	bool readLines(string fileName, ifstream& fileStream);
+	bool writeLines(string fileName, ofstream& fileStream);
+	bool close(ifstream& fileStreamIn, ofstream& fileStreamOut);
 };
 
+/**
+ @class hexCharTable
+ It converts hexadecimals to chars \n
+ */
 class hexCharTable {
 private:
 	vector<char> table;
 public:
 	hexCharTable();
-	~hexCharTable();
-	char hexToChar(int);
-	int charToHex(char);
+	~hexCharTable() {
+	}
+	bool hexToChar(unsigned int, unsigned int, char& charOut);
 };
 
+/**
+ @class degreeHexTable
+ It converts degree angles to hexadecimal \n
+ */
 class degreeHexTable {
 private:
-	vector<int> table;
-	int hexInDegree;
+	vector<unsigned int> table;
+	const int hexInDegree = 16;
 public:
 	degreeHexTable();
-	~degreeHexTable();
-	int degreeToHex(int);
-	int hexToDegree(int);
+	~degreeHexTable() {
+	}
+	bool degreeToHex(unsigned int, unsigned int&);
 };
 
-class CharClass {
-private:
-	char char1;
-	degreeHexTable angleTable;
-	hexCharTable hexTable;
-public:
-	CharClass(char);
-	~CharClass();
-	char toChar();
-	int degreeToHex;
-	void toHex(double&, double&);
-};
-
+/**
+ @class DegreePair
+ Utilities for pairs of degree angles \n
+ */
 class DegreePair {
 private:
-	int degree1;
-	int degree2;
-	const int maxDegree;
-	const int minDegree;
+	unsigned int degree1;
+	unsigned int degree2;
+	bool badFlag;
+	const double maxDegree = 360; //inclusive
+	const double minDegree = 0; //inclusive
 	degreeHexTable angleTable;
 	hexCharTable hexTable;
 public:
-	DegreePair(double, double);
-	~DegreePair();
-	char toChar();
+	DegreePair(double angle1, double angle2);
+	~DegreePair() {
+	}
+	bool toChar(char& retChar);
 };
 
+/**
+ @class Parser
+ Utilities for stream decoding \n
+ */
+class Parser {
+private:
+	unsigned int fileSize, filePos, angleBufferNum, charWritten, ignoreNum;
+	char charBuffer[2], charBufferOut[1];
+	double angle1, angleTemp;
+	string streamBuffer;
+public:
+	Parser() {
+	}
+	~Parser() {
+	}
+	bool degreeLineToCharLine(ifstream& fileStreamIn, ofstream& fileStreamOut);
+	bool bufferHandle();
+	bool angleHandle();
+};
+
+/*
+ * hexCharTable Implementation
+ */
 hexCharTable::hexCharTable() {
 	unsigned int i, n;
 	// build a lookup map
 	// hex values are actually represented in base10
 	for (i = 0, n = 128; i < n; i++) {
-		table[i] = char(i);
+		table.push_back(char(i));
 	}
 }
 
-hexCharTable::~hexCharTable() {
-	// pointers were not used
-}
-
-char hexCharTable::hexToChar(int hex_) {
+bool hexCharTable::hexToChar(unsigned int hex1, unsigned int hex2,
+		char& charOut) {
+	unsigned long charCode;
+	std::bitset<4> bs1(hex1);
+	std::bitset<4> bs2(hex2);
+	/*cout << hex1 << "=" << bs1.to_string() << " " << hex2 << "="
+	 << bs2.to_string() << endl;*/
 	try {
-		return table[hex_];
+		charCode = bitset<8>(bs1.to_string() + bs2.to_string()).to_ulong();
+		charOut = table[charCode];
+		return true;
 	} catch (...) {
-		return char(0);
+		return false;
 	}
 }
-
-int hexCharTable::charToHex(char char_) {
-	try {
-		return *(vector<char>::iterator) (find(table.begin(), table.end(),
-				char_));
-	} catch (...) {
-		return 0;
-	}
-}
-
+/*
+ * degreeHexTable Implementation
+ */
 degreeHexTable::degreeHexTable() {
-	hexInDegree = 16;
 	unsigned int i, n;
 	// build a lookup map
 	for (i = 0, n = 360; i < n; i++) {
-		table[i] = (int) ((double) i / (360.0 / (double) hexInDegree));
+		table.push_back(
+				(unsigned int) ((double) i / (360.0 / (double) hexInDegree)));
 	}
 	table[360] = hexInDegree;
 }
 
-degreeHexTable::~degreeHexTable() {
-	// pointers were not used
-}
-
-int degreeHexTable::degreeToHex(int degree_) {
+bool degreeHexTable::degreeToHex(unsigned int degree_, unsigned int& hexOut) {
 	try {
-		return table[degree_];
+		hexOut = table[degree_];
+		return true;
 	} catch (...) {
-		return 0;
+		// nothing
 	}
+	return false;
 }
 
-int degreeHexTable::hexToDegree(int hex_) {
-	try {
-		return *(vector<int>::iterator) (find(table.begin(), table.end(), hex_));
-	} catch (...) {
-		return 0;
-	}
+/*
+ * FileHandler Implementation
+ */
+bool FileHandler::close(ifstream& fileStreamIn, ofstream& fileStreamOut) {
+	fileStreamIn.close();
+	fileStreamOut.close();
+	return true;
 }
 
-FileHandler::FileHandler() {
-
-}
-FileHandler::~FileHandler() {
-
-}
-
-bool FileHandler::readLines(string filename, vector<double>& angles) {
-	ifstream in;    // Create an input file stream.
-	double angle;
-	in.open(filename);  // Use it to read from a file named data.txt.
-	cout << "whyyy";
-	if (in.is_open()) {
-		cout << "why";
-		while (in >> angle) {
-			cout << angle << endl;
-			angles.push_back(angle);
-		}
+bool FileHandler::readLines(string fileName, ifstream& fileStream) {
+	fileStream.open(fileName);  // Use it to read from a file named data.txt.
+	if (fileStream.is_open()) {
 		return true;
 	} else {
 		return false;
 	}
 }
 
-class Parser {
-private:
-	string degreeLine;
-	string charLine;
-	vector<DegreePair> degreePairList;
-	vector<CharClass> charClassList;
-public:
-	Parser(string);
-	~Parser();
-	vector<DegreePair> parseDegree(string);
-	vector<CharClass> parseChar(string);
-	string degreeLineToCharLine(string);
-	string charLineToDegreeLine(string);
-};
-
-class martian {
-public:
-	static char degreeToHex(double degree) {
-		int hexInt;
-		if (degree >= 0.0 && degree <= 360.0) { // 0.0 to 360.0 range
-			hexInt = (int) (degree / (360.0 / 16.0)); // 16 hex values
-			if (hexInt < 10)
-				return char(hexInt + 48); // 0 to 10
-			else if (hexInt < 16)
-				return char(hexInt - 10 + 65); // 10 to 15
-			else
-				return char(70); // 360.0 => F
-		}
-		return 0; // null char on error or out of range
-	}
-};
-
-int main() {
-	vector<double> angles;
-	FileHandler fh;
-	string fileName;
-	cout << "Please enter the file name and extension:" << endl;
-	cin >> fileName;
-	if(!fh.readLines(fileName, angles)){
-		cout << "Could not read the file." << endl;
+bool FileHandler::writeLines(string fileName, ofstream& fileStream) {
+	fileStream.open(fileName);  // Use it to read from a file named data.txt.
+	if (fileStream.is_open()) {
+		return true;
 	} else {
-		cout << "File read." << endl;
+		return false;
 	}
-	unsigned int i, n;
-	n = angles.size();
-	for (i = 0; i < n; i++) {
-		cout << angles[i] << endl;
-	}
+}
 
-	double x;
-	char ascii;
-	cin >> x;
-	ascii = martian::degreeToHex(x);
-	if (ascii == 0)
-		cout << "out of range";
-	else
-		cout << x << " hex:" << ascii;
-	cin >> x;
+/*
+ * DegreePair Implementation
+ */
+DegreePair::DegreePair(double angle1, double angle2) {
+	//cout << angle1 << " " << angle2 << endl;
+	badFlag = false;
+	if (angle1 > maxDegree || angle1 < minDegree || angle2 > maxDegree
+			|| angle2 < minDegree) {
+		// out of range, let's mark the angles as bad
+		degree1 = degree2 = 0;
+		badFlag = true;
+	}
+	degree1 = (unsigned int) angle1;
+	degree2 = (unsigned int) angle2;
+}
+
+bool DegreePair::toChar(char& retChar) {
+	unsigned int hex1, hex2;
+	if (!badFlag) {
+		if (angleTable.degreeToHex(degree1, hex1)
+				&& angleTable.degreeToHex(degree2, hex2)) {
+			if (hexTable.hexToChar(hex1, hex2, retChar)) {
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+/*
+ * Parser Implementation
+ */
+bool Parser::degreeLineToCharLine(ifstream& fileStreamIn,
+		ofstream& fileStreamOut) {
+	streamBuffer = "";
+	angle1 = 0;
+	charBuffer[1] = 0; // null termination for the c-string
+	fileSize = angleBufferNum = charWritten = ignoreNum = 0;
+	fileStreamIn.seekg(0, ios::end); // set the pointer to the end
+	fileSize = fileStreamIn.tellg(); // get the length of the file
+	fileStreamIn.seekg(0, ios::beg); // set the pointer to the beginning
+	for (filePos = 0; filePos < fileSize; filePos++) {
+		fileStreamIn.seekg(filePos, ios::beg);
+		fileStreamIn.read(charBuffer, 1);
+		// successfully parsed a single double
+		if (bufferHandle()) {
+			//cout << angle1 << " " << angleTemp << endl;
+			// successfully parsed a single double
+			if (angleHandle()) {
+				fileStreamOut.write(charBufferOut, 1);
+				charWritten++;
+			}
+		}
+		// to many bad angles, stop parsing
+		if (ignoreNum >= 3) {
+			return false;
+		}
+	}
+	if (charWritten > 0) {
+		return true;
+	}
+	return false;
+}
+
+bool Parser::bufferHandle() {
+	bool flag = false;
+	if (isdigit(charBuffer[0]) || charBuffer[0] == '.') {
+		// numbers and decimals are allowed for double
+		streamBuffer.append(charBuffer);
+	} else {
+		// non-double found. Let's assume it is a delimiter and parse our buffer as a double now
+		if (streamBuffer.length() > 0) {
+			//cout << streamBuffer << endl;
+			if (streamBuffer.length() < 5) {
+				try {
+					angleTemp = stod(streamBuffer);
+					flag = true;
+				} catch (...) {
+					// conversion not good.
+					ignoreNum++;
+				}
+			} else {
+				ignoreNum++;
+			}
+			streamBuffer = "";
+		}
+	}
+	return flag;
+}
+
+bool Parser::angleHandle() {
+	if (angleBufferNum == 0) {
+		angle1 = angleTemp;
+		angleBufferNum++;
+	} else if (angleBufferNum == 1) {
+		// We now have a pair of two angles so now we can convert them to a char
+		angleBufferNum = 0;
+		DegreePair degreePair(angle1, angleTemp);
+		if (degreePair.toChar(charBufferOut[0])) {
+			return true;
+		} else {
+			// conversion not good. let's ignore this char
+			ignoreNum++;
+		}
+	}
+	return false;
+}
+
+/*
+ * main & interface
+ * Rules For Decoding:
+ * - delimiters don't matter. Consecutive angles are always paired up.
+ * - angles expressed as decimals are okay
+ * - any angle that can't be converted to a double will stop the entire file from decoding
+ * - any angle not in 0 <= x <= 360.0 will be ignored
+ * - any angle that does not convert to an ascii character 0-127 will be ignored
+ * - after ignoring 3 bad angles or characters the parsing will stop
+ */
+int main() {
+	FileHandler fh;
+	Parser parser;
+	string fileNameIn, fileNameOut;
+	ifstream fileStreamIn;
+	ofstream fileStreamOut;
+	/*cout << "Please enter the input file name and extension:" << endl;
+	 getline(cin, fileNameIn);
+	 cout << "Please enter the output file name and extension:" << endl;
+	 getline(cin, fileNameOut);*/
+	fileNameIn = "AsciiDegrees.csv";
+	fileNameOut = "output.txt";
+	if (!fh.readLines(fileNameIn, fileStreamIn)
+			|| !fh.writeLines(fileNameOut, fileStreamOut)) {
+		cout << "Could not read either the input or output file." << endl;
+	} else {
+		cout << "Reading file..." << endl;
+		/* we pass file streams instead of a string to this method
+		 * because we want to stream the data and decode it as we read.
+		 * This way very large files won't lag or crash the program.
+		 */
+		if (parser.degreeLineToCharLine(fileStreamIn, fileStreamOut)) {
+			cout << "File successfully decoded!" << endl;
+		} else {
+			cout << "File could not be decoded." << endl;
+		}
+		fh.close(fileStreamIn, fileStreamOut);
+	}
+	cout << "Enter any key to exit..." << endl;
+	string temp;
+	getline(cin, temp);
 	return 0;
 }
+/*
+ * Design Reflection:
+ * Writing the message parser as reading and writing two streams simultaneously
+ * was actually not a good idea since it creates more random reads and writes for
+ * the hard drive.
+ */
