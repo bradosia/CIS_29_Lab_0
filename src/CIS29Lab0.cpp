@@ -1,9 +1,8 @@
 //============================================================================
 // Name        : Lab0
 // Author      : Branden Lee
-// Version     :
-// Copyright   : Free
-// Description : Hello World in C++, Ansi-style
+// Date        : 4/18/2018
+// Description : Decode angles to chars like in the movie "Mars"
 //============================================================================
 
 #include <string>
@@ -168,18 +167,16 @@ bool FileHandler::readLines(string fileName, ifstream& fileStream) {
 	fileStream.open(fileName);  // Use it to read from a file named data.txt.
 	if (fileStream.is_open()) {
 		return true;
-	} else {
-		return false;
 	}
+	return false;
 }
 
 bool FileHandler::writeLines(string fileName, ofstream& fileStream) {
 	fileStream.open(fileName);  // Use it to read from a file named data.txt.
 	if (fileStream.is_open()) {
 		return true;
-	} else {
-		return false;
 	}
+	return false;
 }
 
 /*
@@ -307,9 +304,9 @@ int main() {
 	ifstream fileStreamIn;
 	ofstream fileStreamOut;
 	/*cout << "Please enter the input file name and extension:" << endl;
-	 getline(cin, fileNameIn);
-	 cout << "Please enter the output file name and extension:" << endl;
-	 getline(cin, fileNameOut);*/
+	getline(cin, fileNameIn);
+	cout << "Please enter the output file name and extension:" << endl;
+	getline(cin, fileNameOut);*/
 	fileNameIn = "AsciiDegrees.csv";
 	fileNameOut = "output.txt";
 	if (!fh.readLines(fileNameIn, fileStreamIn)
